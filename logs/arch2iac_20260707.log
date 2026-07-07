@@ -1,0 +1,66 @@
+2026-07-07 14:46:22.161 | INFO     | utils.logging_config:setup_logger:38 — Logger initialized. Log file: /Users/arkadipbasu/Downloads/arch2iac/arch2iac/logs/arch2iac_20260707.log
+2026-07-07 14:46:22.188 | WARNING  | generators.llm_generator:<module>:15 — google-generativeai not installed
+2026-07-07 14:46:50.586 | INFO     | __main__:add_node:415 — Added node: Load Balancer (aws_alb) id=393e9a0e
+2026-07-07 14:47:10.624 | INFO     | __main__:add_node:415 — Added node: S3 Bucket (aws_s3) id=32e9373c
+2026-07-07 14:47:33.998 | INFO     | __main__:add_node:415 — Added node: EC2 Instance (aws_ec2) id=56aa458c
+2026-07-07 14:47:42.382 | INFO     | __main__:add_node:415 — Added node: EC2 Instance (aws_ec2) id=912e3680
+2026-07-07 14:48:47.672 | INFO     | __main__:add_edge:456 — Added edge (traffic): 393e9a0e → 56aa458c [line-1]
+2026-07-07 14:48:47.672 | INFO     | __main__:log_event:470 — Edge added: Load Balancer →[Traffic / HTTP]→ EC2 Instance
+2026-07-07 14:49:16.256 | INFO     | __main__:add_edge:456 — Added edge (traffic): 393e9a0e → 912e3680 [line-2]
+2026-07-07 14:49:16.256 | INFO     | __main__:log_event:470 — Edge added: Load Balancer →[Traffic / HTTP]→ EC2 Instance
+2026-07-07 14:49:36.967 | INFO     | __main__:add_edge:456 — Added edge (traffic): 32e9373c → 393e9a0e [line-3]
+2026-07-07 14:49:36.968 | INFO     | __main__:log_event:470 — Edge added: S3 Bucket →[Traffic / HTTP]→ Load Balancer
+2026-07-07 14:50:18.621 | INFO     | __main__:log_event:470 — Deleted 1 edge(s)
+2026-07-07 14:50:29.706 | INFO     | __main__:add_edge:456 — Added edge (traffic): 56aa458c → 32e9373c [line-3]
+2026-07-07 14:50:29.706 | INFO     | __main__:log_event:470 — Edge added: EC2 Instance →[Traffic / HTTP]→ S3 Bucket
+2026-07-07 14:51:57.328 | INFO     | __main__:add_edge:456 — Added edge (replication): 912e3680 → 56aa458c [line-3]
+2026-07-07 14:51:57.328 | INFO     | __main__:log_event:470 — Edge added: EC2 Instance →[Replication / Sync]→ EC2 Instance
+2026-07-07 14:52:36.261 | INFO     | __main__:log_event:470 — OpenTofu generated: 4 resources for aws
+2026-07-07 14:54:43.619 | INFO     | generators.llm_generator:call_llm:94 — Calling OpenAI API
+2026-07-07 14:54:53.076 | INFO     | __main__:add_node:415 — Added node: Load Balancer (azurerm_load_balancer) id=f38f9e3f
+2026-07-07 14:54:53.077 | INFO     | __main__:add_node:415 — Added node: Network Security Group (azurerm_network_security_group) id=415d15d6
+2026-07-07 14:54:53.077 | INFO     | __main__:add_node:415 — Added node: Virtual Machine 1 (azurerm_virtual_machine) id=a9346218
+2026-07-07 14:54:53.078 | INFO     | __main__:add_node:415 — Added node: Virtual Machine 2 (azurerm_virtual_machine) id=35138299
+2026-07-07 14:54:53.078 | INFO     | __main__:add_node:415 — Added node: Storage Account for VM 1 (azurerm_storage_account) id=d61dbda9
+2026-07-07 14:54:53.078 | INFO     | __main__:add_node:415 — Added node: Storage Account for VM 2 (azurerm_storage_account) id=617d910e
+2026-07-07 14:54:53.078 | INFO     | __main__:add_edge:456 — Added edge (traffic): f38f9e3f → a9346218 [routes traffic to]
+2026-07-07 14:54:53.079 | INFO     | __main__:add_edge:456 — Added edge (traffic): f38f9e3f → 35138299 [routes traffic to]
+2026-07-07 14:54:53.079 | INFO     | __main__:add_edge:456 — Added edge (traffic): a9346218 → d61dbda9 [attached storage]
+2026-07-07 14:54:53.079 | INFO     | __main__:add_edge:456 — Added edge (traffic): 35138299 → 617d910e [attached storage]
+2026-07-07 14:54:53.080 | INFO     | __main__:add_edge:456 — Added edge (traffic): f38f9e3f → 415d15d6 [secured by]
+2026-07-07 14:54:53.082 | INFO     | __main__:log_event:470 — AI generated 6 components from description
+2026-07-07 14:54:58.544 | INFO     | generators.llm_generator:call_llm:94 — Calling OpenAI API
+2026-07-07 14:55:03.520 | INFO     | __main__:add_node:415 — Added node: Virtual Machine 1 (azurerm_virtual_machine) id=339afd4a
+2026-07-07 14:55:03.520 | INFO     | __main__:add_node:415 — Added node: Virtual Machine 2 (azurerm_virtual_machine) id=9f7b7e0c
+2026-07-07 14:55:03.521 | INFO     | __main__:add_node:415 — Added node: Load Balancer (azurerm_load_balancer) id=6a6e5e59
+2026-07-07 14:55:03.521 | INFO     | __main__:add_node:415 — Added node: Network Security Group (azurerm_network_security_group) id=7a6b778b
+2026-07-07 14:55:03.521 | INFO     | __main__:add_node:415 — Added node: Storage Account for VM 1 (azurerm_storage_account) id=a129c931
+2026-07-07 14:55:03.521 | INFO     | __main__:add_node:415 — Added node: Storage Account for VM 2 (azurerm_storage_account) id=bf6e251e
+2026-07-07 14:55:03.522 | INFO     | __main__:add_edge:456 — Added edge (traffic): 6a6e5e59 → 339afd4a [Load Balancer to VM 1]
+2026-07-07 14:55:03.522 | INFO     | __main__:add_edge:456 — Added edge (traffic): 6a6e5e59 → 9f7b7e0c [Load Balancer to VM 2]
+2026-07-07 14:55:03.522 | INFO     | __main__:add_edge:456 — Added edge (traffic): 7a6b778b → 6a6e5e59 [Network Security Group to Load Balancer]
+2026-07-07 14:55:03.522 | INFO     | __main__:add_edge:456 — Added edge (traffic): 339afd4a → a129c931 [VM 1 to Storage Account]
+2026-07-07 14:55:03.522 | INFO     | __main__:add_edge:456 — Added edge (traffic): 9f7b7e0c → bf6e251e [VM 2 to Storage Account]
+2026-07-07 14:55:03.523 | INFO     | __main__:log_event:470 — AI generated 6 components from description
+2026-07-07 15:20:33.515 | INFO     | utils.logging_config:setup_logger:38 — Logger initialized. Log file: /Users/arkadipbasu/Downloads/arch2iac/arch2iac/logs/arch2iac_20260707.log
+2026-07-07 15:20:33.529 | WARNING  | generators.llm_generator:<module>:15 — google-generativeai not installed
+2026-07-07 15:22:21.396 | INFO     | utils.logging_config:setup_logger:38 — Logger initialized. Log file: /Users/arkadipbasu/Downloads/arch2iac/arch2iac/logs/arch2iac_20260707.log
+2026-07-07 15:22:21.399 | WARNING  | generators.llm_generator:<module>:15 — google-generativeai not installed
+2026-07-07 15:28:47.860 | INFO     | utils.logging_config:setup_logger:38 — Logger initialized. Log file: /Users/arkadipbasu/Downloads/arch2iac/arch2iac/logs/arch2iac_20260707.log
+2026-07-07 15:28:47.862 | WARNING  | generators.llm_generator:<module>:15 — google-generativeai not installed
+2026-07-07 15:31:23.409 | INFO     | utils.logging_config:setup_logger:38 — Logger initialized. Log file: /Users/arkadipbasu/Downloads/arch2iac/arch2iac/logs/arch2iac_20260707.log
+2026-07-07 15:31:23.411 | WARNING  | generators.llm_generator:<module>:15 — google-generativeai not installed
+2026-07-07 15:31:37.591 | INFO     | utils.logging_config:setup_logger:38 — Logger initialized. Log file: /Users/arkadipbasu/Downloads/arch2iac/arch2iac/logs/arch2iac_20260707.log
+2026-07-07 15:31:37.595 | WARNING  | generators.llm_generator:<module>:15 — google-generativeai not installed
+2026-07-07 15:33:50.513 | INFO     | utils.logging_config:setup_logger:38 — Logger initialized. Log file: /Users/arkadipbasu/Downloads/arch2iac/arch2iac/logs/arch2iac_20260707.log
+2026-07-07 15:33:50.515 | WARNING  | generators.llm_generator:<module>:15 — google-generativeai not installed
+2026-07-07 15:35:31.507 | INFO     | generators.llm_generator:call_llm:100 — Falling back to OpenAI
+2026-07-07 15:35:37.795 | INFO     | __main__:add_node:437 — Added node: CloudWatch (aws_cloudwatch) id=ca58598a
+2026-07-07 15:35:37.796 | INFO     | __main__:add_node:437 — Added node: SQS Queue (aws_sqs) id=72c11fb6
+2026-07-07 15:35:37.797 | INFO     | __main__:add_node:437 — Added node: ElastiCache (aws_elasticache) id=84cca784
+2026-07-07 15:35:37.797 | INFO     | __main__:add_node:437 — Added node: S3 Bucket for Logs (aws_s3) id=ab899737
+2026-07-07 15:35:37.797 | INFO     | __main__:add_edge:478 — Added edge (traffic): ca58598a → 72c11fb6 [CloudWatch sends alerts to SQS Queue]
+2026-07-07 15:35:37.797 | INFO     | __main__:add_edge:478 — Added edge (traffic): 72c11fb6 → 84cca784 [SQS Queue triggers processing in ElastiCache]
+2026-07-07 15:35:37.797 | INFO     | __main__:add_edge:478 — Added edge (traffic): ca58598a → ab899737 [CloudWatch logs are stored in S3 Bucket]
+2026-07-07 15:35:37.798 | INFO     | __main__:log_event:492 — AI generated 4 components from description
+2026-07-07 15:36:00.082 | INFO     | __main__:log_event:492 — OpenTofu generated: 4 resources for aws
