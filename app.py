@@ -1,7 +1,7 @@
 """
 Arch2IaC — Enterprise Cloud Architecture to IaC Dashboard
 Streamlit application entry point.
-https://arkadipbasu.github.io/
+Contact : arkadipbasu.github.io
 """
 import sys
 import os
@@ -100,6 +100,29 @@ st.markdown("""
     margin-top: 0.2rem;
 }
 
+.gradient-text {
+  font-size: 24px; 
+  font-weight: bold;
+  
+  background: linear-gradient(45deg, #006a50, #005BED);
+  
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.gradient-text2 {
+  font-size: 24px; 
+  font-weight: bold;
+  
+  background: linear-gradient(45deg, #005BED, #006a50);
+  
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+             
+    
 /* Canvas */
 .canvas-container {
     background: var(--bg-card);
@@ -478,15 +501,6 @@ def log_event(msg: str, level: str = "INFO"):
 # ─── Inline Panel ────────────────────────────────────────────────────────────
 
 def render_sidebar():
-    """Render the component palette as an inline left panel (no st.sidebar)."""
-    st.markdown("""
-    <div style="padding:0.6rem 0 0.8rem; text-align:center;border-bottom:1px solid #1e2d45;margin-bottom:0.8rem;">
-        <div style="font-size:1.6rem;">🏗️</div>
-        <div style="font-size:0.95rem;font-weight:700;background:linear-gradient(90deg,#60a5fa,#06b6d4);
-            -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">Arch2IaC</div>
-        <div style="font-size:0.6rem;color:#475569;margin-top:1px;">Architecture → IaC</div>
-    </div>
-    """, unsafe_allow_html=True)
 
     # Project settings
     st.markdown('<div style="font-size:0.72rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px;">📁 Project</div>', unsafe_allow_html=True)
@@ -1481,7 +1495,7 @@ def main():
         st.markdown(f"""
         <div class="arch-header" style="margin-bottom:0.8rem;padding:0.8rem 1.4rem;">
             <div>
-                <div class="arch-title" style="font-size:1.4rem;">🏗️ Arch2IaC</div>
+                <div class="arch-title" style="font-size:1.4rem;">🏗️ Architechture to IaC</div>
                 <div class="arch-subtitle">Enterprise Architecture → Infrastructure as Code</div>
             </div>
             <div style="margin-left:auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
@@ -1510,12 +1524,39 @@ def main():
     if st.session_state.sidebar_open and left_col is not None:
         with left_col:
             # Styled panel wrapper
+            # st.markdown("""
+            # <div style="background:#DEF4FC;border:.1px solid #005BED;border-radius:1px;
+            #     padding:0.1rem 0.1rem;min-height:3vh;overflow-y:auto;">
+            # """, unsafe_allow_html=True)
+            # render_sidebar()
+            # st.markdown("</div>", unsafe_allow_html=True)
+
             st.markdown("""
-            <div style="background:#111827;border:1px solid #1e2d45;border-radius:10px;
-                padding:0.8rem 0.6rem;min-height:80vh;overflow-y:auto;">
+            <style>
+            .gradient-text {
+                font-size: 15px;
+                font-weight: bold;
+                background: linear-gradient(45deg, #006a50, #005BED);
+                -webkit-background-clip: text;
+                background-clip: text;
+                text-align: center;
+                -webkit-text-fill-color: transparent;
+            }
+            </style>
+
+            <div style="
+                # background:#DEF4FC;
+                border:0.1px solid #005BED;
+                border-radius:1px;
+                padding:0.5rem;
+                min-height:2vh;
+                overflow-y:auto;
+            ">
+                <div class="gradient-text">Dev portal maintained by: <a href="https://arkadipbasu.github.io" target="_blank">arkadipbasu.github.io</a></div>
+            </div>
             """, unsafe_allow_html=True)
+
             render_sidebar()
-            st.markdown("</div>", unsafe_allow_html=True)
 
     with main_col:
         # Main tabs
