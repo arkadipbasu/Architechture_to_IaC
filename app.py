@@ -31,7 +31,7 @@ st.set_page_config(
     page_title="Arch2IaC",
     page_icon="🏗️",
     layout="wide",
-    initial_sidebar_state="expanded",
+    initial_sidebar_state="collapsed",
     menu_items={
         "About": "Arch2IaC — Architecture Diagram to Infrastructure as Code\nBuilt with Streamlit + OpenTofu + AI"
     }
@@ -99,29 +99,7 @@ st.markdown("""
     color: var(--text-secondary);
     margin-top: 0.2rem;
 }
-            
-.gradient-text {
-  font-size: 24px; 
-  font-weight: bold;
-  
-  background: linear-gradient(45deg, #006a50, #005BED);
-  
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
 
-.gradient-text2 {
-  font-size: 24px; 
-  font-weight: bold;
-  
-  background: linear-gradient(45deg, #005BED, #006a50);
-  
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-                       
 /* Canvas */
 .canvas-container {
     background: var(--bg-card);
@@ -369,10 +347,13 @@ div[data-testid="stExpander"] {
 .provider-gcp { border-color: rgba(66,133,244,.4); color: #4285f4; }
 .provider-openstack { border-color: rgba(237,25,68,.4); color: #ed1944; }
 
-/* Hide streamlit defaults */
+/* Hide streamlit defaults + native sidebar chrome */
 #MainMenu { visibility: hidden; }
 footer { visibility: hidden; }
 header { visibility: hidden; }
+[data-testid="stSidebar"] { display: none !important; }
+[data-testid="collapsedControl"] { display: none !important; }
+section[data-testid="stSidebarNav"] { display: none !important; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -398,6 +379,7 @@ def init_state():
         "openai_key": "",
         "chat_history": [],
         "generation_log": [],
+        "sidebar_open": True,
     }
     for k, v in defaults.items():
         if k not in st.session_state:
@@ -493,137 +475,132 @@ def log_event(msg: str, level: str = "INFO"):
         logger.info(msg)
 
 
-# ─── Sidebar ─────────────────────────────────────────────────────────────────
-# <div style="font-size:1.1rem;font-weight:700;background:linear-gradient(90deg,#60a5fa,#06b6d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">Arch2IaC</div>
+# ─── Inline Panel ────────────────────────────────────────────────────────────
 
 def render_sidebar():
-    with st.sidebar:
-        # Logo
-        st.markdown("""
-        <div style="padding:1rem 0 0.5rem; text-align:center;">
-            <div style="font-size:2rem;">🏗️</div>
-            <h2 class="gradient-text2">Architechture to IaC</h2>
-            <h3 class="gradient-text">arkadipbasu.github.io</h3>
-        </div>
-        """, unsafe_allow_html=True)
+    """Render the component palette as an inline left panel (no st.sidebar)."""
+    st.markdown("""
+    <div style="padding:0.6rem 0 0.8rem; text-align:center;border-bottom:1px solid #1e2d45;margin-bottom:0.8rem;">
+        <div style="font-size:1.6rem;">🏗️</div>
+        <div style="font-size:0.95rem;font-weight:700;background:linear-gradient(90deg,#60a5fa,#06b6d4);
+            -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">Arch2IaC</div>
+        <div style="font-size:0.6rem;color:#475569;margin-top:1px;">Architecture → IaC</div>
+    </div>
+    """, unsafe_allow_html=True)
 
-        st.divider()
+    # Project settings
+    st.markdown('<div style="font-size:0.72rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px;">📁 Project</div>', unsafe_allow_html=True)
+    st.session_state.project_name = st.text_input(
+        "Project Name", value=st.session_state.project_name,
+        label_visibility="collapsed", placeholder="Project name…"
+    )
 
-        # Project settings
-        st.markdown("**📁 Project**")
-        st.session_state.project_name = st.text_input(
-            "Project Name", value=st.session_state.project_name, label_visibility="collapsed",
-            placeholder="Project name…"
-        )
+    prov_options = {"aws": "🟠 AWS", "azure": "🔵 Azure", "gcp": "🔴 GCP", "openstack": "⚫ OpenStack"}
+    st.session_state.provider = st.selectbox(
+        "Cloud Provider",
+        options=list(prov_options.keys()),
+        format_func=lambda x: prov_options[x],
+        index=list(prov_options.keys()).index(st.session_state.provider)
+    )
 
-        prov_options = {"aws": "🟠 AWS", "azure": "🔵 Azure", "gcp": "🔴 GCP", "openstack": "⚫ OpenStack"}
-        st.session_state.provider = st.selectbox(
-            "Cloud Provider",
-            options=list(prov_options.keys()),
-            format_func=lambda x: prov_options[x],
-            index=list(prov_options.keys()).index(st.session_state.provider)
-        )
+    st.session_state.iac_type = st.radio(
+        "IaC Output",
+        options=["opentofu", "cloudformation"],
+        format_func=lambda x: "⚙️ OpenTofu" if x == "opentofu" else "☁️ CloudFormation",
+        horizontal=False
+    )
+    if st.session_state.iac_type == "cloudformation" and st.session_state.provider != "aws":
+        st.markdown('<div class="warn-box" style="font-size:0.7rem;">⚠️ CloudFormation is AWS-only.</div>', unsafe_allow_html=True)
 
-        st.session_state.iac_type = st.radio(
-            "IaC Output",
-            options=["opentofu", "cloudformation"],
-            format_func=lambda x: "⚙️ OpenTofu / Terraform" if x == "opentofu" else "☁️ CloudFormation (AWS only)",
-            horizontal=False
-        )
-        if st.session_state.iac_type == "cloudformation" and st.session_state.provider != "aws":
-            st.markdown('<div class="warn-box">⚠️ CloudFormation is AWS-only. Switch to OpenTofu for other providers.</div>', unsafe_allow_html=True)
+    st.divider()
 
-        st.divider()
+    # Component palette
+    st.markdown('<div style="font-size:0.72rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px;">🧩 Components</div>', unsafe_allow_html=True)
+    components = get_all_components(st.session_state.provider)
+    categories = sorted(set(c["category"] for c in components))
+    selected_cat = st.selectbox("Category", ["All"] + categories, label_visibility="collapsed")
 
-        # Component palette
-        st.markdown("**🧩 Component Palette**")
-        components = get_all_components(st.session_state.provider)
-        categories = sorted(set(c["category"] for c in components))
-        selected_cat = st.selectbox("Category", ["All"] + categories, label_visibility="collapsed")
+    filtered = components if selected_cat == "All" else [c for c in components if c["category"] == selected_cat]
 
-        filtered = components if selected_cat == "All" else [c for c in components if c["category"] == selected_cat]
+    search = st.text_input("🔍", placeholder="Search…", label_visibility="collapsed")
+    if search:
+        filtered = [c for c in filtered if search.lower() in c["label"].lower()]
 
-        search = st.text_input("🔍 Search", placeholder="Filter components…", label_visibility="collapsed")
-        if search:
-            filtered = [c for c in filtered if search.lower() in c["label"].lower()]
-
-        for comp in filtered[:30]:
-            tag_cls = CATEGORY_TAG_CLASS.get(comp["category"], "tag-compute")
-            col1, col2 = st.columns([3, 1])
-            with col1:
-                st.markdown(f"""
-                <div class="palette-component">
-                    <span class="palette-icon">{comp['icon']}</span>
-                    <div>
-                        <div class="palette-text">{comp['label']}</div>
-                        <span class="tag {tag_cls}">{comp['category']}</span>
-                    </div>
+    for comp in filtered[:30]:
+        tag_cls = CATEGORY_TAG_CLASS.get(comp["category"], "tag-compute")
+        c_left, c_right = st.columns([5, 1])
+        with c_left:
+            st.markdown(f"""
+            <div class="palette-component">
+                <span class="palette-icon">{comp['icon']}</span>
+                <div>
+                    <div class="palette-text">{comp['label']}</div>
+                    <span class="tag {tag_cls}" style="font-size:0.52rem;">{comp['category']}</span>
                 </div>
-                """, unsafe_allow_html=True)
-            with col2:
-                if st.button("➕", key=f"add_{comp['id']}_{comp['category']}", help=f"Add {comp['label']}"):
-                    add_node(comp)
-                    st.rerun()
-
-        st.divider()
-
-        # LLM Settings
-        with st.expander("🤖 AI Settings"):
-            st.session_state.llm_provider = st.radio(
-                "LLM Provider",
-                ["gemini", "openai"],
-                format_func=lambda x: "✨ Gemini" if x == "gemini" else "🧠 OpenAI"
-            )
-            st.session_state.gemini_key = st.text_input(
-                "Gemini API Key", type="password",
-                value=st.session_state.gemini_key,
-                placeholder="AIza…"
-            )
-            st.session_state.openai_key = st.text_input(
-                "OpenAI API Key", type="password",
-                value=st.session_state.openai_key,
-                placeholder="sk-…"
-            )
-            has_key = bool(st.session_state.gemini_key or st.session_state.openai_key)
-            if has_key:
-                st.markdown('<div class="success-box">✅ API key configured</div>', unsafe_allow_html=True)
-            else:
-                st.markdown('<div class="warn-box">⚠️ Add API key for AI features</div>', unsafe_allow_html=True)
-
-        st.divider()
-
-        # Quick actions
-        st.markdown("**⚡ Quick Actions**")
-        c1, c2 = st.columns(2)
-        with c1:
-            if st.button("🗑️ Clear", use_container_width=True):
-                st.session_state.nodes = []
-                st.session_state.edges = []
-                st.session_state.cf_template = None
-                st.session_state.tofu_files = None
-                st.session_state.ai_analysis = None
-                log_event("Canvas cleared")
-                st.rerun()
-        with c2:
-            if st.button("📋 Sample", use_container_width=True):
-                _load_sample_architecture()
+            </div>
+            """, unsafe_allow_html=True)
+        with c_right:
+            if st.button("➕", key=f"add_{comp['id']}_{comp['category']}", help=f"Add {comp['label']}"):
+                add_node(comp)
                 st.rerun()
 
-        # Stats
-        n_nodes = len(st.session_state.nodes)
-        n_edges = len(st.session_state.edges)
-        st.markdown(f"""
-        <div style="display:flex;gap:8px;margin-top:8px;">
-            <div class="metric-card" style="flex:1;padding:8px;">
-                <div class="metric-value" style="font-size:1.4rem;">{n_nodes}</div>
-                <div class="metric-label">Components</div>
-            </div>
-            <div class="metric-card" style="flex:1;padding:8px;">
-                <div class="metric-value" style="font-size:1.4rem;">{n_edges}</div>
-                <div class="metric-label">Connections</div>
-            </div>
+    st.divider()
+
+    # AI Settings
+    with st.expander("🤖 AI Settings"):
+        st.session_state.llm_provider = st.radio(
+            "LLM", ["gemini", "openai"],
+            format_func=lambda x: "✨ Gemini" if x == "gemini" else "🧠 OpenAI"
+        )
+        st.session_state.gemini_key = st.text_input(
+            "Gemini Key", type="password",
+            value=st.session_state.gemini_key, placeholder="AIza…"
+        )
+        st.session_state.openai_key = st.text_input(
+            "OpenAI Key", type="password",
+            value=st.session_state.openai_key, placeholder="sk-…"
+        )
+        has_key = bool(st.session_state.gemini_key or st.session_state.openai_key)
+        st.markdown(
+            '<div class="success-box" style="font-size:0.7rem;">✅ API key set</div>' if has_key
+            else '<div class="warn-box" style="font-size:0.7rem;">⚠️ No API key</div>',
+            unsafe_allow_html=True
+        )
+
+    st.divider()
+
+    # Quick actions
+    st.markdown('<div style="font-size:0.72rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px;">⚡ Quick Actions</div>', unsafe_allow_html=True)
+    c1, c2 = st.columns(2)
+    with c1:
+        if st.button("🗑️ Clear", use_container_width=True):
+            st.session_state.nodes = []
+            st.session_state.edges = []
+            st.session_state.cf_template = None
+            st.session_state.tofu_files = None
+            st.session_state.ai_analysis = None
+            log_event("Canvas cleared")
+            st.rerun()
+    with c2:
+        if st.button("📋 Sample", use_container_width=True):
+            _load_sample_architecture()
+            st.rerun()
+
+    # Stats
+    n_nodes = len(st.session_state.nodes)
+    n_edges = len(st.session_state.edges)
+    st.markdown(f"""
+    <div style="display:flex;gap:6px;margin-top:8px;">
+        <div class="metric-card" style="flex:1;padding:6px;">
+            <div class="metric-value" style="font-size:1.2rem;">{n_nodes}</div>
+            <div class="metric-label">Nodes</div>
         </div>
-        """, unsafe_allow_html=True)
+        <div class="metric-card" style="flex:1;padding:6px;">
+            <div class="metric-value" style="font-size:1.2rem;">{n_edges}</div>
+            <div class="metric-label">Edges</div>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
 
 
 def _load_sample_architecture():
@@ -1487,59 +1464,87 @@ def render_export():
 # ─── Main Layout ─────────────────────────────────────────────────────────────
 
 def main():
-    render_sidebar()
+    # ── Toggle button row (always visible, above everything) ──────────────────
+    toggle_col, header_col = st.columns([1, 11])
+    with toggle_col:
+        is_open = st.session_state.sidebar_open
+        toggle_label = "◀ Hide" if is_open else "▶ Panel"
+        if st.button(toggle_label, key="sidebar_toggle", use_container_width=True,
+                     help="Show / hide the component palette"):
+            st.session_state.sidebar_open = not st.session_state.sidebar_open
+            st.rerun()
 
-    # Header
+    # ── Header ────────────────────────────────────────────────────────────────
     prov = st.session_state.provider
     pmeta = PROVIDER_META[prov]
-    st.markdown(f"""
-    <div class="arch-header">
-        <div>
-            <div class="arch-title">🏗️ Arch2IaC</div>
-            <div class="arch-subtitle">Enterprise Architecture → Infrastructure as Code Generator</div>
-        </div>
-        <div style="margin-left:auto;display:flex;gap:10px;align-items:center;">
-            <div class="provider-badge provider-{prov}">{pmeta['icon']} {pmeta['label']}</div>
-            <div class="provider-badge" style="color:#94a3b8;">
-                {'⚙️ OpenTofu' if st.session_state.iac_type == 'opentofu' else '☁️ CloudFormation'}
+    with header_col:
+        st.markdown(f"""
+        <div class="arch-header" style="margin-bottom:0.8rem;padding:0.8rem 1.4rem;">
+            <div>
+                <div class="arch-title" style="font-size:1.4rem;">🏗️ Arch2IaC</div>
+                <div class="arch-subtitle">Enterprise Architecture → Infrastructure as Code</div>
             </div>
-            <div class="provider-badge" style="color:#94a3b8;">
-                📂 {st.session_state.project_name}
+            <div style="margin-left:auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+                <div class="provider-badge provider-{prov}">{pmeta['icon']} {pmeta['label']}</div>
+                <div class="provider-badge" style="color:#94a3b8;">
+                    {'⚙️ OpenTofu' if st.session_state.iac_type == 'opentofu' else '☁️ CloudFormation'}
+                </div>
+                <div class="provider-badge" style="color:#94a3b8;">
+                    📂 {st.session_state.project_name}
+                </div>
+                <div class="provider-badge" style="color:#475569;">
+                    🧩 {len(st.session_state.nodes)} nodes · 🔗 {len(st.session_state.edges)} edges
+                </div>
             </div>
         </div>
-    </div>
-    """, unsafe_allow_html=True)
+        """, unsafe_allow_html=True)
 
-    # Main tabs
-    tab_canvas, tab_iac, tab_ai, tab_export, tab_logs = st.tabs([
-        "🎨 Canvas", "⚙️ IaC Output", "🤖 AI Assistant", "📦 Export", "📋 Logs"
-    ])
+    # ── Body: optional left panel + main content ──────────────────────────────
+    if st.session_state.sidebar_open:
+        left_col, main_col = st.columns([1, 3], gap="small")
+    else:
+        # Render a dummy invisible column to satisfy Python, but only use main_col
+        left_col = None
+        main_col = st.container()
 
-    with tab_canvas:
-        st.markdown("### 🎨 Architecture Canvas")
-        st.caption("Add components from the sidebar · Click a node or use the dropdown below to edit/connect/delete · Drag nodes to reposition")
-        # Graph at full width (avoids nested-columns errors from inner st.columns calls)
-        render_canvas()
-        # Property editor below, in its own top-level column pair
-        if st.session_state.nodes:
-            st.divider()
-            _ec, _ee = st.columns([1, 1])
-            with _ec:
-                st.markdown("#### ✏️ Property Editor")
-                render_node_editor()
+    if st.session_state.sidebar_open and left_col is not None:
+        with left_col:
+            # Styled panel wrapper
+            st.markdown("""
+            <div style="background:#111827;border:1px solid #1e2d45;border-radius:10px;
+                padding:0.8rem 0.6rem;min-height:80vh;overflow-y:auto;">
+            """, unsafe_allow_html=True)
+            render_sidebar()
+            st.markdown("</div>", unsafe_allow_html=True)
 
-    with tab_iac:
-        st.markdown("### ⚙️ Infrastructure as Code")
-        render_iac_panel()
+    with main_col:
+        # Main tabs
+        tab_canvas, tab_iac, tab_ai, tab_export, tab_logs = st.tabs([
+            "🎨 Canvas", "⚙️ IaC Output", "🤖 AI Assistant", "📦 Export", "📋 Logs"
+        ])
 
-    with tab_ai:
-        render_ai_assistant()
+        with tab_canvas:
+            st.caption("Add components from the panel · Click a node in the graph or use the dropdown below to edit/connect/delete · Drag to reposition")
+            render_canvas()
+            if st.session_state.nodes:
+                st.divider()
+                _ec, _ee = st.columns([1, 1])
+                with _ec:
+                    st.markdown("#### ✏️ Property Editor")
+                    render_node_editor()
 
-    with tab_export:
-        render_export()
+        with tab_iac:
+            st.markdown("### ⚙️ Infrastructure as Code")
+            render_iac_panel()
 
-    with tab_logs:
-        render_logs()
+        with tab_ai:
+            render_ai_assistant()
+
+        with tab_export:
+            render_export()
+
+        with tab_logs:
+            render_logs()
 
 
 if __name__ == "__main__":
